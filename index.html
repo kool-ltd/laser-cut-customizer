@@ -1,20 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Knife Engraving Customiser</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Lobster&family=Roboto&display=swap" rel="stylesheet">
 
 <style>
-:root{
-  --accent:#111;
-  --bg:#fafafa;
-  --border:#ddd;
-  --pad:1rem;
-  --radius:.5rem;
-}
+:root{--accent:#111;--bg:#fafafa;--border:#ddd;--pad:1rem;--radius:.5rem;}
 *{box-sizing:border-box;}
 body{margin:0;font-family:Roboto,Arial,Helvetica,sans-serif;background:var(--bg);color:#222;}
 h1{text-align:center;margin:.5rem 0 1rem;}
@@ -24,13 +18,12 @@ h1{text-align:center;margin:.5rem 0 1rem;}
 .product-option{position:relative;}
 .product-option input{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .product-option img{width:100%;border:2px solid transparent;border-radius:var(--radius);display:block;}
-.product-option input:checked + img{border-color:var(--accent);}
+.product-option input:checked+img{border-color:var(--accent);}
 .controls{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;}
 .controls label{font-size:.9rem;margin-right:.25rem;}
 #canvas-wrapper{width:100%;max-width:900px;max-height:600px;margin:auto;overflow:hidden;border:1px solid var(--border);border-radius:var(--radius);background:#eaeaea;text-align:center;}
 canvas{touch-action:none;display:block;width:100%;height:auto;}
-.buttons{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;}
-button,a.download{background:var(--accent);color:#fff;border:none;padding:.6rem 1rem;border-radius:var(--radius);cursor:pointer;text-decoration:none;font-weight:600;}
+button{background:var(--accent);color:#fff;border:none;padding:.6rem 1rem;border-radius:var(--radius);cursor:pointer;font-weight:600;}
 button[disabled]{opacity:.4;cursor:not-allowed;}
 @media(max-width:600px){.controls{flex-direction:column;align-items:flex-start;}}
 </style>
@@ -39,39 +32,23 @@ button[disabled]{opacity:.4;cursor:not-allowed;}
 <h1>Knife Engraving Customiser</h1>
 <div class="container">
 
-  <!-- 1. PRODUCT CHOICE -->
+  <!-- 1. PRODUCT -->
   <div class="section">
     <h2 style="margin-top:0;">1. Choose your knife</h2>
     <div id="product-picker">
-      <label class="product-option">
-        <input type="radio" name="product" value="chef.jpg">
-        <img src="chef.jpg" alt="Chef Knife">
-      </label>
-      <label class="product-option">
-        <input type="radio" name="product" value="santoku.jpg">
-        <img src="santoku.jpg" alt="Santoku Knife">
-      </label>
-      <label class="product-option">
-        <input type="radio" name="product" value="paring.jpg">
-        <img src="paring.jpg" alt="Paring Knife">
-      </label>
-      <label class="product-option">
-        <input type="radio" name="product" value="utility.jpg">
-        <img src="utility.jpg" alt="Utility Knife">
-      </label>
+      <label class="product-option"><input type="radio" name="product" value="chef.jpg"><img src="chef.jpg" alt="Chef knife"></label>
+      <label class="product-option"><input type="radio" name="product" value="santoku.jpg"><img src="santoku.jpg" alt="Santoku knife"></label>
+      <label class="product-option"><input type="radio" name="product" value="paring.jpg"><img src="paring.jpg" alt="Paring knife"></label>
+      <label class="product-option"><input type="radio" name="product" value="utility.jpg"><img src="utility.jpg" alt="Utility knife"></label>
     </div>
   </div>
 
-  <!-- 2. ENGRAVING CONTROLS -->
+  <!-- 2. CONTROLS -->
   <div class="section">
     <h2 style="margin-top:0;">2. Customise text</h2>
     <div class="controls">
-      <div>
-        <label for="engraveText">Text:</label>
-        <input type="text" id="engraveText" placeholder="Enter engraving">
-      </div>
-      <div>
-        <label for="fontSelect">Font:</label>
+      <div><label for="engraveText">Text:</label><input type="text" id="engraveText" placeholder="Enter engraving"></div>
+      <div><label for="fontSelect">Font:</label>
         <select id="fontSelect">
           <option value="Montserrat">Montserrat</option>
           <option value="Roboto">Roboto</option>
@@ -81,102 +58,95 @@ button[disabled]{opacity:.4;cursor:not-allowed;}
           <option value="Arial">Arial</option>
         </select>
       </div>
-      <div>
-        <label for="fontSize">Size:</label>
-        <input type="number" id="fontSize" value="48" min="10" max="300" style="width:5rem;">
-      </div>
+      <div><label for="fontSize">Size:</label><input type="number" id="fontSize" value="48" min="10" max="300" style="width:5rem;"></div>
     </div>
   </div>
 
-  <!-- 3. LIVE PREVIEW -->
+  <!-- 3. PREVIEW -->
   <div class="section">
-    <h2 style="margin-top:0;">3. Position the text (drag &amp; drop)</h2>
-    <div id="canvas-wrapper">
-      <canvas id="viewCanvas"></canvas>
-    </div>
-    <div class="buttons">
-      <button id="generateBtn" disabled>Generate download files</button>
-      <a id="dlPreview" class="download" download="preview.png" style="display:none;">Download preview</a>
-      <a id="dlText" class="download" download="text-only.png" style="display:none;">Download text-only</a>
+    <h2 style="margin-top:0;">3. Drag the text to position</h2>
+    <div id="canvas-wrapper"><canvas id="viewCanvas"></canvas></div>
+    <div style="text-align:center;margin-top:1rem;">
+      <button id="generateBtn" disabled>Generate & Download PNG files</button>
     </div>
   </div>
 
-</div><!-- /container -->
+</div>
 
 <script>
-/* ============================================================================
-   ELEMENTS & STATE
-============================================================================ */
-const radios   = document.querySelectorAll('[name="product"]');
-const txt      = document.getElementById('engraveText');
-const fontSel  = document.getElementById('fontSelect');
-const sizeSel  = document.getElementById('fontSize');
-const vCan     = document.getElementById('viewCanvas');           // visible
-const vCtx     = vCan.getContext('2d');
-const xCan     = document.createElement('canvas');                // export
-const xCtx     = xCan.getContext('2d');
-const genBtn   = document.getElementById('generateBtn');
-const dlPrev   = document.getElementById('dlPreview');
-const dlText   = document.getElementById('dlText');
+/* ---------------------------------------------------------------
+   ELEMENTS & GLOBAL STATE
+----------------------------------------------------------------*/
+const radios = document.querySelectorAll('[name="product"]');
+const txt    = document.getElementById('engraveText');
+const font   = document.getElementById('fontSelect');
+const fSize  = document.getElementById('fontSize');
+const view   = document.getElementById('viewCanvas');
+const vCtx   = view.getContext('2d');
+const full   = document.createElement('canvas');      // full-rez (knife + text)
+const fCtx   = full.getContext('2d');
+const genBtn = document.getElementById('generateBtn');
 
-let img=null;                 // loaded Image
-let pos={x:0,y:0};            // text pos in FULL resolution
-let scale=1;                  // view = full * scale
-let dragging=false,offX=0,offY=0;
+let img=null, pos={x:0,y:0}, scale=1, dragging=false, offX=0, offY=0;
 
-/* ============================================================================
+/* ---------------------------------------------------------------
    HELPERS
-============================================================================ */
-function loadImage(src){
-  return new Promise((res,rej)=>{
-    const i=new Image();
-    i.crossOrigin="anonymous";      // avoid tainted canvas
-    i.onload=()=>res(i);
-    i.onerror=rej;
-    i.src=src;
-  });
-}
+----------------------------------------------------------------*/
+const loadImage = src => new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=_=>res(i);i.onerror=rej;i.src=src;});
 
 function updateScale(){
-  const maxW=900, maxH=600;
+  const maxW=900,maxH=600;
   scale=Math.min(1,maxW/img.naturalWidth,maxH/img.naturalHeight);
-  vCan.width = img.naturalWidth*scale;
-  vCan.height= img.naturalHeight*scale;
-  xCan.width = img.naturalWidth;
-  xCan.height= img.naturalHeight;
+  view.width = img.naturalWidth*scale;
+  view.height= img.naturalHeight*scale;
+  full.width = img.naturalWidth;
+  full.height= img.naturalHeight;
 }
 
 function draw(){
-  if(!img)return;
-  // --- full-rez canvas (export) ---
-  xCtx.clearRect(0,0,xCan.width,xCan.height);
-  xCtx.drawImage(img,0,0);
-  xCtx.font=`${sizeSel.value}px ${fontSel.value}`;
-  xCtx.fillStyle="#000";
-  xCtx.textBaseline="top";
-  xCtx.fillText(txt.value,pos.x,pos.y);
+  if(!img) return;
 
-  // --- scaled view canvas ---
-  vCtx.setTransform(scale,0,0,scale,0,0);  // simple scale matrix
-  vCtx.clearRect(0,0,vCan.width/scale,vCan.height/scale);
+  /* --- full-rez canvas (knife + text) --- */
+  fCtx.clearRect(0,0,full.width,full.height);
+  fCtx.drawImage(img,0,0);
+  fCtx.font=`${fSize.value}px ${font.value}`;
+  fCtx.fillStyle='#000';
+  fCtx.textBaseline='top';
+  fCtx.fillText(txt.value,pos.x,pos.y);
+
+  /* --- scaled view canvas --- */
+  vCtx.setTransform(scale,0,0,scale,0,0);
+  vCtx.clearRect(0,0,view.width/scale,view.height/scale);
   vCtx.drawImage(img,0,0);
-  vCtx.font=`${sizeSel.value}px ${fontSel.value}`;
-  vCtx.fillStyle="#000";
-  vCtx.textBaseline="top";
+  vCtx.font=`${fSize.value}px ${font.value}`;
+  vCtx.fillStyle='#000';
+  vCtx.textBaseline='top';
   vCtx.fillText(txt.value,pos.x,pos.y);
-  vCtx.setTransform(1,0,0,1,0,0); // reset
+  vCtx.setTransform(1,0,0,1,0,0);
 }
 
-function hit(mx,my){
-  vCtx.font=`${sizeSel.value}px ${fontSel.value}`;
+function withinText(mx,my){
+  vCtx.font=`${fSize.value}px ${font.value}`;
   const w=vCtx.measureText(txt.value).width*scale;
-  const h=parseInt(sizeSel.value,10)*scale;
+  const h=parseInt(fSize.value,10)*scale;
   return mx>=pos.x*scale && mx<=pos.x*scale+w && my>=pos.y*scale && my<=pos.y*scale+h;
 }
 
-/* ============================================================================
+function downloadCanvas(can,filename){
+  const trigger=(url)=>{
+    const a=document.createElement('a');
+    a.href=url;a.download=filename;
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},100);
+  };
+  if(can.toBlob){
+    can.toBlob(blob=>trigger(URL.createObjectURL(blob)));
+  }else{trigger(can.toDataURL('image/png'));}
+}
+
+/* ---------------------------------------------------------------
    EVENTS
-============================================================================ */
+----------------------------------------------------------------*/
 radios.forEach(r=>{
   r.addEventListener('change',async e=>{
     img=await loadImage(e.target.value);
@@ -188,37 +158,39 @@ radios.forEach(r=>{
   });
 });
 
-[txt,fontSel,sizeSel].forEach(el=>el.addEventListener('input',draw));
+[txt,font,fSize].forEach(el=>el.addEventListener('input',draw));
 
-vCan.addEventListener('pointerdown',e=>{
-  const rect=vCan.getBoundingClientRect();
-  const mx=e.clientX-rect.left;
-  const my=e.clientY-rect.top;
-  if(hit(mx,my)){
-    dragging=true;
-    offX=mx-pos.x*scale;
-    offY=my-pos.y*scale;
-    vCan.setPointerCapture(e.pointerId);
-  }
+view.addEventListener('pointerdown',e=>{
+  const rect=view.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  if(withinText(mx,my)){dragging=true;offX=mx-pos.x*scale;offY=my-pos.y*scale;view.setPointerCapture(e.pointerId);}
 });
-vCan.addEventListener('pointermove',e=>{
+view.addEventListener('pointermove',e=>{
   if(!dragging)return;
-  const rect=vCan.getBoundingClientRect();
+  const rect=view.getBoundingClientRect();
   pos.x=(e.clientX-rect.left-offX)/scale;
   pos.y=(e.clientY-rect.top-offY)/scale;
   draw();
 });
-['pointerup','pointercancel'].forEach(ev=>vCan.addEventListener(ev,()=>dragging=false));
+['pointerup','pointercancel'].forEach(ev=>view.addEventListener(ev,()=>dragging=false));
 
-/* --- GENERATE FILES --- */
+/* --- EXPORT BOTH FILES --- */
 genBtn.addEventListener('click',()=>{
   draw(); // ensure latest
 
-  dlPrev.href = vCan.toDataURL('image/png');     // scaled preview for customer
-  dlPrev.style.display='inline-flex';
+  /* 1. preview.png  (knife + text) */
+  downloadCanvas(full,'preview.png');
 
-  dlText.href = xCan.toDataURL('image/png');     // full-rez text-only
-  dlText.style.display='inline-flex';
+  /* 2. text-only.png */
+  const tCan=document.createElement('canvas');
+  tCan.width=full.width; tCan.height=full.height;
+  const tCtx=tCan.getContext('2d');
+  tCtx.font=`${fSize.value}px ${font.value}`;
+  tCtx.fillStyle='#000';
+  tCtx.textBaseline='top';
+  tCtx.fillText(txt.value,pos.x,pos.y);
+
+  downloadCanvas(tCan,'text-only.png');
 });
 </script>
 </body>
