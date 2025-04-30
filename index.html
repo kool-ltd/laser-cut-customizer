@@ -92,21 +92,29 @@ let img=null, pos={x:0,y:0}, scale=1, dragging=false, offX=0, offY=0;
 /* ---------------------------------------------------------------
    HELPERS
 ----------------------------------------------------------------*/
-const loadImage = src => new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=_=>res(i);i.onerror=rej;i.src=src;});
+async function loadImageHighRes(src){
+  // Fetch the *original* file as a blob (no auto-downscaling!)
+  const blob  = await fetch(src,{mode:'cors'}).then(r=>r.blob());
+  const url   = URL.createObjectURL(blob);
+  return new Promise(res=>{
+    const i=new Image();
+    i.onload=_=>{URL.revokeObjectURL(url);res(i);}
+    i.src=url;
+  });
+}
 
 function updateScale(){
-  const maxW=900,maxH=600;
-  scale=Math.min(1,maxW/img.naturalWidth,maxH/img.naturalHeight);
-  view.width = img.naturalWidth*scale;
-  view.height= img.naturalHeight*scale;
-  full.width = img.naturalWidth;
-  full.height= img.naturalHeight;
+  const MAX_W=900, MAX_H=600;
+  scale=Math.min(1, MAX_W/img.naturalWidth, MAX_H/img.naturalHeight);
+  view.width  = img.naturalWidth*scale;
+  view.height = img.naturalHeight*scale;
+  full.width  = img.naturalWidth;
+  full.height = img.naturalHeight;
 }
 
 function draw(){
   if(!img) return;
-
-  /* --- full-rez canvas (knife + text) --- */
+  /* ---- full-rez preview (knife + text) ---- */
   fCtx.clearRect(0,0,full.width,full.height);
   fCtx.drawImage(img,0,0);
   fCtx.font=`${fSize.value}px ${font.value}`;
@@ -114,7 +122,7 @@ function draw(){
   fCtx.textBaseline='top';
   fCtx.fillText(txt.value,pos.x,pos.y);
 
-  /* --- scaled view canvas --- */
+  /* ---- scaled view canvas ---- */
   vCtx.setTransform(scale,0,0,scale,0,0);
   vCtx.clearRect(0,0,view.width/scale,view.height/scale);
   vCtx.drawImage(img,0,0);
@@ -133,15 +141,14 @@ function withinText(mx,my){
 }
 
 function downloadCanvas(can,filename){
-  const trigger=(url)=>{
+  const trigger=url=>{
     const a=document.createElement('a');
-    a.href=url;a.download=filename;
-    document.body.appendChild(a);a.click();
+    a.href=url; a.download=filename;
+    document.body.appendChild(a); a.click();
     setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},100);
   };
-  if(can.toBlob){
-    can.toBlob(blob=>trigger(URL.createObjectURL(blob)));
-  }else{trigger(can.toDataURL('image/png'));}
+  if(can.toBlob){ can.toBlob(blob=>trigger(URL.createObjectURL(blob))); }
+  else          { trigger(can.toDataURL('image/png')); }
 }
 
 /* ---------------------------------------------------------------
@@ -149,10 +156,10 @@ function downloadCanvas(can,filename){
 ----------------------------------------------------------------*/
 radios.forEach(r=>{
   r.addEventListener('change',async e=>{
-    img=await loadImage(e.target.value);
+    img = await loadImageHighRes(e.target.value);
     updateScale();
-    pos.x=img.naturalWidth*0.5-100;
-    pos.y=img.naturalHeight*0.5-20;
+    pos.x = img.naturalWidth*0.5-100;
+    pos.y = img.naturalHeight*0.5-20;
     draw();
     genBtn.disabled=false;
   });
@@ -174,23 +181,22 @@ view.addEventListener('pointermove',e=>{
 });
 ['pointerup','pointercancel'].forEach(ev=>view.addEventListener(ev,()=>dragging=false));
 
-/* --- EXPORT BOTH FILES --- */
+/* ---- EXPORT BOTH FILES ---- */
 genBtn.addEventListener('click',()=>{
-  draw(); // ensure latest
+  draw();                     // make sure canvases are current
 
-  /* 1. preview.png  (knife + text) */
+  /* 1. preview.png  (knife + text, full resolution) */
   downloadCanvas(full,'preview.png');
 
-  /* 2. text-only.png */
-  const tCan=document.createElement('canvas');
-  tCan.width=full.width; tCan.height=full.height;
-  const tCtx=tCan.getContext('2d');
+  /* 2. text-only.png (full resolution, transparent bg) */
+  const textCan=document.createElement('canvas');
+  textCan.width=full.width; textCan.height=full.height;
+  const tCtx=textCan.getContext('2d');
   tCtx.font=`${fSize.value}px ${font.value}`;
   tCtx.fillStyle='#000';
   tCtx.textBaseline='top';
   tCtx.fillText(txt.value,pos.x,pos.y);
-
-  downloadCanvas(tCan,'text-only.png');
+  downloadCanvas(textCan,'text-only.png');
 });
 </script>
 </body>
